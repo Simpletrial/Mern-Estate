@@ -16,23 +16,28 @@ import { useDispatch } from 'react-redux';
 export default function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
-  console.log("Button loading state:", loading);
-
   const [file, setFile] = useState(undefined);
   const [filePrec, setFilePrec] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const dispatch = useDispatch();
-
-  // ✅ ADDED: Fill formData from currentUser when component mounts
   useEffect(() => {
     setFormData({
       username: currentUser.username,
       email: currentUser.email,
-      avatar: currentUser.avatar,
+      avatar: currentUser.avatar || currentUser.photoURL || '',  // ✅
+      photoURL: currentUser.photoURL || '',                      // ✅ added here
     });
   }, [currentUser]);
+    
+
+  useEffect(() => {
+    console.log('Updated FormData:', formData);  // This will log the formData every time it changes
+    if (formData.avatar) {
+      console.log('Updated Avatar URL:', formData.avatar);  // Log the avatar URL
+    }
+  }, [formData]);  
 
   useEffect(() => {
     if (file) {
@@ -52,12 +57,10 @@ export default function Profile() {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setFilePrec(Math.round(progress));
       },
-      (error) => {
-        setFileUploadError(true);
-      },
+      () => setFileUploadError(true),
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData({ ...formData, avatar: downloadURL })
+          setFormData((prev) => ({ ...prev, avatar: downloadURL }))
         );
       }
     );
@@ -73,13 +76,10 @@ export default function Profile() {
     try {
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log('Update response:', data);
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
         return;
@@ -122,31 +122,34 @@ export default function Profile() {
       dispatch(deleteUserFailure(error.message));
     }
   };
+  console.log('Form Data Avatar URL:', formData.avatar);
+  console.log('Current User:', currentUser);
+
 
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-        <input onChange={(e) => setFile(e.target.files[0])} type='file' ref={fileRef} hidden accept='image/*' />
-        <img
-          onClick={() => fileRef.current.click()}
-          src={formData.avatar}
-          alt='profile'
-          className='rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2'
-        />
-        <p className='text-sm self-center'>
-          {fileUploadError ? (
-            <span className='text-red-700'>Error Image upload</span>
-          ) : filePrec > 0 && filePrec < 100 ? (
-            <span className='text-slate-700'>{`Uploading ${filePrec}%`}</span>
-          ) : filePrec === 100 ? (
-            <span className='text-green-700'>Image Successfully uploaded</span>
-          ) : (
-            ''
-          )}
-        </p>
+      <input onChange={(e) => setFile(e.target.files[0])} type='file' ref={fileRef} hidden accept='image/*' />
+      <img
+        onClick={() => fileRef.current.click()}
+        src={formData.avatar || formData.photoURL || '/default-avatar.png'}
+        alt='profile'
+        className='rounded-full h-32 w-32 object-cover cursor-pointer border-2 border-slate-400 mx-auto my-4'/>
 
-        {/* ✅ MODIFIED: Use controlled input with value instead of defaultValue */}
+
+      <p className='text-sm text-center'>
+        {fileUploadError ? (
+          <span className='text-red-700'>Error Image upload</span>
+        ) : filePrec > 0 && filePrec < 100 ? (
+          <span className='text-slate-700'>{`Uploading ${filePrec}%`}</span>
+        ) : filePrec === 100 ? (
+          <span className='text-green-700'>Image Successfully uploaded</span>
+        ) : (
+          ''
+        )}
+      </p>
+
+      <form onSubmit={handleSubmit} className='flex flex-col gap-4 mt-4'>
         <input
           type='text'
           placeholder='username'
@@ -163,9 +166,14 @@ export default function Profile() {
           className='border p-3 rounded-lg'
           onChange={handleChange}
         />
-        <input type='password' placeholder='password' id='password' className='border p-3 rounded-lg' />
+        <input
+          type='password'
+          placeholder='password'
+          id='password'
+          value={formData.password || ''}
+          className='border p-3 rounded-lg'
+          onChange={handleChange}/>
 
-        {/* ✅ MODIFIED: Loading handled properly with disabled state */}
         <button
           className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
           disabled={loading}
@@ -184,7 +192,7 @@ export default function Profile() {
       </div>
 
       <p className='text-red-700 mt-5'>{error ? error : ''}</p>
-      <p className='text-green-700 mt-5'>{updateSuccess ? 'User is Updated Successlly!' : ''}</p>
+      <p className='text-green-700 mt-5'>{updateSuccess ? 'User is Updated Successfully!' : ''}</p>
     </div>
   );
 }
