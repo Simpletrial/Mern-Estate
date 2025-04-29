@@ -12,7 +12,7 @@ import {
   signOutUserStart,
 } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
-
+import { Link } from 'react-router-dom'; 
 export default function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -22,22 +22,21 @@ export default function Profile() {
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const dispatch = useDispatch();
+
   useEffect(() => {
     setFormData({
-      username: currentUser.username,
-      email: currentUser.email,
-      avatar: currentUser.avatar || currentUser.photoURL || '',  // ✅
-      photoURL: currentUser.photoURL || '',                      // ✅ added here
+      username: currentUser.username || '',
+      email: currentUser.email || '',
+      avatar: currentUser.avatar || currentUser.photoURL || '', // ✅
     });
   }, [currentUser]);
-    
 
   useEffect(() => {
     console.log('Updated FormData:', formData);  // This will log the formData every time it changes
     if (formData.avatar) {
       console.log('Updated Avatar URL:', formData.avatar);  // Log the avatar URL
     }
-  }, [formData]);  
+  }, [formData]);
 
   useEffect(() => {
     if (file) {
@@ -74,10 +73,14 @@ export default function Profile() {
     e.preventDefault();
     dispatch(updateUserStart());
     try {
+      // Include avatar if it was uploaded or retain the current avatar
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          avatar: formData.avatar || currentUser.avatar,  // Ensure avatar is included
+        }),
       });
       const data = await res.json();
       if (data.success === false) {
@@ -122,9 +125,9 @@ export default function Profile() {
       dispatch(deleteUserFailure(error.message));
     }
   };
+
   console.log('Form Data Avatar URL:', formData.avatar);
   console.log('Current User:', currentUser);
-
 
   return (
     <div className='p-3 max-w-lg mx-auto'>
@@ -132,11 +135,10 @@ export default function Profile() {
       <input onChange={(e) => setFile(e.target.files[0])} type='file' ref={fileRef} hidden accept='image/*' />
       <img
         onClick={() => fileRef.current.click()}
-        src={formData.avatar || formData.photoURL || '/default-avatar.png'}
-        alt='profile'
-        className='rounded-full h-32 w-32 object-cover cursor-pointer border-2 border-slate-400 mx-auto my-4'/>
-
-
+        src={formData.avatar || currentUser.avatar || currentUser.photoURL} 
+        alt="Profile"
+        className="rounded-full h-32 w-32 object-cover cursor-pointer border-2 border-slate-400 mx-auto my-4"
+      />
       <p className='text-sm text-center'>
         {fileUploadError ? (
           <span className='text-red-700'>Error Image upload</span>
@@ -172,14 +174,17 @@ export default function Profile() {
           id='password'
           value={formData.password || ''}
           className='border p-3 rounded-lg'
-          onChange={handleChange}/>
-
+          onChange={handleChange}
+        />
         <button
           className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
           disabled={loading}
         >
           {loading ? 'Loading...' : 'Update'}
         </button>
+        <Link className='bg-green-700 text-white p-3
+        rounded-lg uppercase text-center hover:opacity-95' to={"/create-listing"}>
+        Create Listing </Link>
       </form>
 
       <div className='flex justify-between mt-5'>
