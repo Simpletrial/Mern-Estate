@@ -1,10 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit'; 
 
 const initialState = {
-    currentUser: null,
-    error: null,
-    loading: false,
-  };
+  currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
+  error: null,
+  loading: false,
+};
+
   
   const userSlice = createSlice({
     name: 'user',
@@ -14,10 +15,14 @@ const initialState = {
         state.loading = true;
       },
       signInSuccess: (state, action) => {
-        state.currentUser = action.payload;
+        state.currentUser = { 
+          ...action.payload,
+          avatar: action.payload.photoURL || '', // Ensure the avatar is set
+        };
         state.loading = false;
         state.error = null;
-      },
+        localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+      },      
       signInFailure: (state, action) => {
         state.error = action.payload;
         state.loading = false;
@@ -29,6 +34,8 @@ const initialState = {
         state.currentUser = action.payload;
         state.loading = false;
         state.error = null;
+        localStorage.setItem('currentUser', JSON.stringify(action.payload));
+
       },
       updateUserFailure: (state, action) => {
         state.error = action.payload;
@@ -53,6 +60,8 @@ const initialState = {
         state.currentUser = null;
         state.loading = false;
         state.error = null;
+        localStorage.removeItem('currentUser');
+
       },
       signOutUserFailure: (state, action) => {
         state.error = action.payload;
