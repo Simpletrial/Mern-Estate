@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 export default function Contact({ listing }) {
   const [landlord, setLandlord] = useState(null);
   const [message, setMessage] = useState('');
+  const [showForm, setShowForm] = useState(false); // New state to toggle
 
   const onChange = (e) => {
     setMessage(e.target.value);
   };
 
-  // Helper function to safely encode the message for the mailto link
   const encodeMessage = (msg) => {
     return encodeURIComponent(msg);
   };
@@ -28,12 +28,23 @@ export default function Contact({ listing }) {
 
   return (
     <>
-      {landlord && (
-        <div className='flex flex-col gap-2'>
+      {landlord && !showForm && (
+        <button
+          onClick={() => setShowForm(true)}
+          className='bg-blue-600 text-white px-4 py-2 rounded-md hover:opacity-90'
+        >
+          Contact Landlord
+        </button>
+      )}
+
+      {landlord && showForm && (
+        <div className='flex flex-col gap-2 mt-4'>
           <p>
             Contact <span className='font-semibold'>{landlord.username}</span>{' '}
             for{' '}
-            <span className='font-semibold'>{listing.name.toLowerCase()}</span>
+            <span className='font-semibold'>
+              {listing.name.toLowerCase()}
+            </span>
           </p>
           <textarea
             name='message'
@@ -42,12 +53,13 @@ export default function Contact({ listing }) {
             value={message}
             onChange={onChange}
             placeholder='Enter your message here...'
-            className='w-full border p-3 rounded-lg'></textarea>
-          <a 
-            href={`mailto:${landlordEmail}?subject=Regarding ${listingName}&body=To:%20${landlordEmail}%0D%0ACc:%20%0D%0ASubject:%20Regarding%20${listingName}%0D%0ABody:%20${messageText}`} 
-            target="_blank"
-            rel="noopener noreferrer">Send Message
-          </a>
+            className='w-full border p-3 rounded-lg'>
+            </textarea>
+          <button onClick={() => {
+            const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${landlord.email}&su=Regarding ${listing.name}&body=${encodeMessage(message)}`;
+             window.open(gmailLink, '_blank');}}
+            className='bg-slate-700 text-white p-3 rounded-lg text-center 
+            uppercase hover:opacity-95'>Send Message</button>
         </div>
       )}
     </>
