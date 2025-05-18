@@ -4,4 +4,9 @@
 
 body{
     background-color: rgb(241, 245, 241);
+    cursor: default;
+}
+
+input, textarea, select {
+    cursor: text;
 }

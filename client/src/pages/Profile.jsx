@@ -133,9 +133,13 @@ export default function Profile() {
   const handleShowListings = async () => {
     try {
       setShowListingsError(false);
-      const res = await fetch(`/api/user/listings/${currentUser._id}`, {
+      const res = await fetch(`/api/user/listings/${currentUser._id}`,
+        {
         method: 'GET',
         credentials: 'include', 
+        headers: {
+          'Authorization': `Bearer ${currentUser.token}`,
+       },
       });
       const data = await res.json();
       if (data.success === false) {
@@ -171,10 +175,10 @@ export default function Profile() {
       <input onChange={(e) => setFile(e.target.files[0])} type='file' ref={fileRef} hidden accept='image/*' />
       <img
         onClick={() => fileRef.current.click()}
-        src={formData.avatar || currentUser.avatar || currentUser.photoURL} 
+        src={formData.avatar || currentUser.avatar}
         alt="Profile"
-        className="rounded-full h-32 w-32 object-cover cursor-pointer border-2 border-slate-400 mx-auto my-4"
-      />
+        className="rounded-full h-32 w-32 object-cover cursor-pointer border-2 border-slate-400 mx-auto my-4 bg-white"/>
+
       <p className='text-sm text-center'>
         {fileUploadError ? (
           <span className='text-red-700'>Error Image upload</span>

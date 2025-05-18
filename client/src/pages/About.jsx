@@ -3,10 +3,10 @@ import React from 'react'
 export default function About() {
   return (
     <div className='py-20 px-4 max-w-6xl mx-auto'>
-      <h1 className='text-4xl font-bold mb-6 text-slate-800'>About Sahand Estate</h1>
+      <h1 className='text-4xl font-bold mb-6 text-slate-800'>About Style Estate</h1>
 
       <p className='mb-6 text-slate-600 text-lg'>
-        Sahand Estate is a leading real estate agency that specializes in helping clients buy, sell, and rent properties in the most desirable neighborhoods. Our dedicated team of experienced agents works tirelessly to match clients with the right homes, ensuring that their real estate journey is both smooth and successful. With a strong network and deep industry connections, we offer a seamless experience from property search to closing deals.
+        Style Estate is a leading real estate agency that specializes in helping clients buy, sell, and rent properties in the most desirable neighborhoods. Our dedicated team of experienced agents works tirelessly to match clients with the right homes, ensuring that their real estate journey is both smooth and successful. With a strong network and deep industry connections, we offer a seamless experience from property search to closing deals.
       </p>
 
       <p className='mb-6 text-slate-600 text-lg'>
